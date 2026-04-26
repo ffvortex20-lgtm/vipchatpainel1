@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de Suporte - Envio de Comprovante</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; }
+        input, select, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: none; box-sizing: border-box; }
+        select { background: #333; color: white; }
+        button { background: #007bff; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        #chat-box { height: 250px; border: 1px solid #333; overflow-y: auto; margin-bottom: 15px; padding: 10px; background: #252525; border-radius: 8px; text-align: left; }
+        .msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; font-size: 14px; line-height: 1.4; }
+        .admin-msg { background: #2e7d32; color: white; border-left: 4px solid #4caf50; }
+        code { background: #000; padding: 2px 5px; color: #00ff00; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="login-area">
+    <h2>Bem-vindo</h2>
+    <p>Faça login para enviar seu comprovante</p>
+    <button onclick="login()">Logar com Google</button>
+</div>
+
+<div class="container" id="chat-area" style="display:none;">
+    <h3>Olá, <span id="user-name"></span></h3>
+    <div id="chat-box"></div>
+    
+    <label>Quantos dias comprou?</label>
+    <select id="dias">
+        <option value="5">5 Dias</option>
+        <option value="10">10 Dias</option>
+        <option value="15">15 Dias</option>
+        <option value="20">20 Dias</option>
+    </select>
+    
+    <label>Foto do comprovante:</label>
+    <input type="file" id="foto" accept="image/*">
+    
+    <button id="btn-enviar" onclick="enviarSolicitacao()">Enviar Comprovante</button>
+    <button onclick="firebase.auth().signOut()" style="background:#444; margin-top: 20px;">Sair</button>
+</div>
+
+<script>
+    // Configurações do seu Firebase extraídas do google-services.json
+    const firebaseConfig = {
+        apiKey: "AIzaSyACGn5I--vTEmJ6eijN2lytZiMgo2ElnW4",
+        authDomain: "vortexdev2.firebaseapp.com",
+        databaseURL: "https://vortexdev2-default-rtdb.firebaseio.com",
+        projectId: "vortexdev2",
+        storageBucket: "vortexdev2.firebasestorage.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+    }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('login-area').style.display = 'none';
+            document.getElementById('chat-area').style.display = 'block';
+            document.getElementById('user-name').innerText = user.displayName;
+            carregarMensagens(user.uid);
+        } else {
+            document.getElementById('login-area').style.display = 'block';
+            document.getElementById('chat-area').style.display = 'none';
+        }
+    });
+
+    function enviarSolicitacao() {
+        const user = auth.currentUser;
+        const dias = document.getElementById('dias').value;
+        const file = document.getElementById('foto').files[0];
+        const btn = document.getElementById('btn-enviar');
+
+        if (!file) return alert("Por favor, selecione a foto do comprovante.");
+
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        const storageRef = storage.ref(`comprovantes/${user.uid}/${Date.now()}`);
+        storageRef.put(file).then(snapshot => {
+            snapshot.ref.getDownloadURL().then(url => {
+                db.ref('solicitacoes/' + user.uid).push({
+                    nome: user.displayName,
+                    email: user.email,
+                    uid: user.uid,
+                    dias: dias,
+                    fotoUrl: url,
+                    timestamp: Date.now()
+                });
+                alert("Comprovante enviado! Aguarde a senha aqui no chat.");
+                btn.disabled = false;
+                btn.innerText = "Enviar Comprovante";
+            });
+        });
+    }
+
+    function carregarMensagens(uid) {
+        db.ref('respostas/' + uid).on('value', snapshot => {
+            const box = document.getElementById('chat-box');
+            box.innerHTML = "";
+            if(!snapshot.exists()){
+                box.innerHTML = "<p style='color:#888'>Nenhuma mensagem ainda. Envie seu comprovante acima.</p>";
+            }
+            snapshot.forEach(item => {
+                const msg = item.val();
+                box.innerHTML += `<div class="msg admin-msg"><b>SUPORTE:</b><br>Sua senha de ${msg.dias} dias foi gerada!<br>SENHA: <code>${msg.senha}</code></div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+</script>
+</body>
+</html>
