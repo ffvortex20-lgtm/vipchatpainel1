@@ -5,61 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VORTEX - Gerador de Keys</title>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #020b1a; font-family: 'Orbitron', sans-serif; color: white; overflow: hidden; }
         #particles-js { position: absolute; width: 100%; height: 100%; z-index: 1; }
-        
         .main-container { position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; height: 100vh; padding: 20px; box-sizing: border-box; }
-        .glass-panel { background: rgba(13, 25, 48, 0.85); border: 1px solid #1a73e8; box-shadow: 0 0 20px rgba(26, 115, 232, 0.4); border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; text-align: center; }
-        
-        h1 { text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px #1a73e8; margin-bottom: 30px; }
-        .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #1a73e8; box-shadow: 0 0 15px #1a73e8; margin-bottom: 15px; }
-
-        #chat-box { height: 150px; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 10px; overflow-y: auto; border-left: 3px solid #1a73e8; text-align: left; font-size: 0.9em; margin-bottom: 15px; }
-        
-        select, input[type="file"] { width: 100%; padding: 12px; background: #0a192f; border: 1px solid #1a73e8; color: #5fb9ff; border-radius: 8px; margin-bottom: 15px; cursor: pointer; }
-        
-        .btn-neon { width: 100%; padding: 15px; border: none; border-radius: 10px; background: linear-gradient(90deg, #1a73e8, #00d2ff); color: white; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 15px rgba(26, 115, 232, 0.6); transition: 0.3s; }
+        .glass-panel { background: rgba(13, 25, 48, 0.9); border: 1px solid #1a73e8; box-shadow: 0 0 25px rgba(26, 115, 232, 0.5); border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; text-align: center; }
+        h1 { text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px #1a73e8; margin-bottom: 30px; font-size: 1.5em; }
+        .user-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #1a73e8; margin-bottom: 15px; }
+        #chat-box { height: 120px; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px; overflow-y: auto; border-left: 3px solid #00ff00; text-align: left; margin-bottom: 15px; font-family: monospace; font-size: 0.85em; }
+        select, input[type="file"] { width: 100%; padding: 12px; background: #0a192f; border: 1px solid #1a73e8; color: #5fb9ff; border-radius: 8px; margin-bottom: 15px; cursor: pointer; font-family: 'Orbitron'; }
+        .btn-neon { width: 100%; padding: 15px; border: none; border-radius: 10px; background: linear-gradient(90deg, #1a73e8, #00d2ff); color: white; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 15px rgba(26, 115, 232, 0.6); transition: 0.3s; font-family: 'Orbitron'; }
         .btn-neon:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(26, 115, 232, 0.8); }
-        
-        .secondary-btn { background: #0f5132; margin-top: 10px; padding: 10px; font-size: 0.8em; }
+        .logout-btn { background: transparent; color: #ff4b2b; border: 1px solid #ff4b2b; margin-top: 15px; padding: 8px; font-size: 0.7em; }
     </style>
 </head>
 <body>
 
-    <div id="particles-js"></div>
+<div id="particles-js"></div>
 
-    <div class="main-container">
-        <div class="glass-panel" id="login-area">
-            <h1>GERADOR DE KEYS</h1>
-            <button class="btn-neon" onclick="login()">🔓 LOGAR COM GOOGLE</button>
-        </div>
-
-        <div class="glass-panel" id="chat-area" style="display:none;">
-            <img id="user-img" class="user-avatar" src="">
-            <h3 id="user-name" style="margin: 0 0 20px 0;"></h3>
-            
-            <div id="chat-box">Aguardando resposta do admin...</div>
-
-            <select id="dias">
-                <option value="5">💎 5 DIAS</option>
-                <option value="10">💎 10 DIAS</option>
-                <option value="15">💎 15 DIAS</option>
-                <option value="20">💎 20 DIAS</option>
-            </select>
-
-            <input type="file" id="foto" accept="image/*">
-            <button class="btn-neon" id="btn-enviar" onclick="enviarSolicitacao()">⚡ ENVIAR COMPROVANTE</button>
-            <button class="btn-neon secondary-btn" onclick="firebase.auth().signOut()">SAIR</button>
-        </div>
+<div class="main-container">
+    <div class="glass-panel" id="login-area">
+        <h1>VORTEX GEN</h1>
+        <p style="color: #5fb9ff; font-size: 0.8em; margin-bottom: 20px;">ACESSO RESTRITO</p>
+        <button class="btn-neon" id="googleLogin">🔓 ENTRAR COM GOOGLE</button>
     </div>
 
-<script>
-    // Configurações Firebase
+    <div class="glass-panel" id="chat-area" style="display:none;">
+        <img id="user-img" class="user-avatar" src="">
+        <h4 id="user-name" style="margin: 0 0 15px 0; color: #00d2ff;"></h4>
+        
+        <div id="chat-box"></div>
+
+        <select id="dias">
+            <option value="5">💎 5 DIAS</option>
+            <option value="10">💎 10 DIAS</option>
+            <option value="15">💎 15 DIAS</option>
+            <option value="20">💎 20 DIAS</option>
+        </select>
+
+        <input type="file" id="foto" accept="image/*">
+        <button class="btn-neon" id="btn-enviar">⚡ ENVIAR COMPROVANTE</button>
+        <button class="btn-neon logout-btn" id="logout">SAIR</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyACGn5I--vTEmJ6eijN2lytZiMgo2ElnW4",
         authDomain: "vortexdev2.firebaseapp.com",
@@ -67,80 +63,90 @@
         projectId: "vortexdev2",
         storageBucket: "vortexdev2.firebasestorage.app"
     };
-    firebase.initializeApp(firebaseConfig);
 
-    const auth = firebase.auth();
-    const db = firebase.database();
-    const storage = firebase.storage();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+    const provider = new GoogleAuthProvider();
 
-    function login() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider);
-    }
+    // Funções de Interface
+    const loginArea = document.getElementById('login-area');
+    const chatArea = document.getElementById('chat-area');
 
-    auth.onAuthStateChanged(user => {
+    document.getElementById('googleLogin').onclick = () => {
+        signInWithPopup(auth, provider).catch(err => {
+            console.error(err);
+            alert("Erro no login: " + err.message);
+        });
+    };
+
+    document.getElementById('logout').onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
         if (user) {
-            document.getElementById('login-area').style.display = 'none';
-            document.getElementById('chat-area').style.display = 'block';
+            loginArea.style.display = 'none';
+            chatArea.style.display = 'block';
             document.getElementById('user-name').innerText = user.displayName;
             document.getElementById('user-img').src = user.photoURL;
-            carregarMensagens(user.uid);
+            
+            // Carregar Respostas do Admin
+            onValue(ref(db, 'respostas/' + user.uid), (snapshot) => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML = "";
+                if(!snapshot.exists()) box.innerHTML = "Envie o comprovante para receber sua KEY.";
+                snapshot.forEach(child => {
+                    const msg = child.val();
+                    box.innerHTML += `<div style="color:#00ff00; margin-bottom:5px;">> KEY GERADA (${msg.dias}D):<br><b style="font-size:1.2em;">VTX-VIP-${msg.senha}</b></div>`;
+                });
+            });
         } else {
-            document.getElementById('login-area').style.display = 'block';
-            document.getElementById('chat-area').style.display = 'none';
+            loginArea.style.display = 'block';
+            chatArea.style.display = 'none';
         }
     });
 
-    function enviarSolicitacao() {
-        const user = auth.currentUser;
-        const dias = document.getElementById('dias').value;
+    document.getElementById('btn-enviar').onclick = async () => {
         const file = document.getElementById('foto').files[0];
-        if (!file) return alert("Selecione o comprovante!");
+        const dias = document.getElementById('dias').value;
+        if (!file) return alert("Selecione a foto!");
 
-        document.getElementById('btn-enviar').innerText = "ENVIANDO...";
+        const btn = document.getElementById('btn-enviar');
+        btn.innerText = "UPLOADING...";
+        btn.disabled = true;
 
-        const storageRef = storage.ref(`comprovantes/${user.uid}/${Date.now()}`);
-        storageRef.put(file).then(snapshot => {
-            snapshot.ref.getDownloadURL().then(url => {
-                db.ref('solicitacoes/' + user.uid).push({
-                    nome: user.displayName,
-                    email: user.email,
-                    uid: user.uid,
-                    dias: dias,
-                    fotoUrl: url,
-                    timestamp: Date.now()
-                });
-                alert("Enviado com sucesso!");
-                document.getElementById('btn-enviar').innerText = "⚡ ENVIAR COMPROVANTE";
+        try {
+            const fileRef = sRef(storage, `comprovantes/${auth.currentUser.uid}/${Date.now()}`);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+
+            await push(ref(db, 'solicitacoes/' + auth.currentUser.uid), {
+                nome: auth.currentUser.displayName,
+                email: auth.currentUser.email,
+                fotoUrl: url,
+                dias: dias,
+                timestamp: Date.now()
             });
-        });
-    }
 
-    function carregarMensagens(uid) {
-        db.ref('respostas/' + uid).on('value', snapshot => {
-            const box = document.getElementById('chat-box');
-            box.innerHTML = "";
-            snapshot.forEach(item => {
-                const msg = item.val();
-                box.innerHTML += `<div style="color:#00ff00; margin-bottom:10px;">[SISTEMA]: Senha gerada para ${msg.dias} dias:<br><b>VTX-VIP-${msg.senha}</b></div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    }
+            alert("Comprovante enviado!");
+            btn.innerText = "⚡ ENVIAR COMPROVANTE";
+            btn.disabled = false;
+        } catch (e) {
+            alert("Erro: " + e.message);
+            btn.disabled = false;
+        }
+    };
 
-    // Configuração do Efeito Snow e Linhas (Particles)
+    // Partículas (Efeito Neve/Linhas)
     particlesJS("particles-js", {
         "particles": {
-            "number": { "value": 80 },
+            "number": { "value": 70 },
             "color": { "value": "#1a73e8" },
             "shape": { "type": "circle" },
             "opacity": { "value": 0.5 },
             "size": { "value": 3 },
             "line_linked": { "enable": true, "distance": 150, "color": "#1a73e8", "opacity": 0.4, "width": 1 },
-            "move": { "enable": true, "speed": 2, "direction": "bottom", "random": false, "straight": false, "out_mode": "out" }
-        },
-        "interactivity": {
-            "events": { "onhover": { "enable": true, "mode": "repulse" } }
+            "move": { "enable": true, "speed": 1.5, "direction": "bottom", "random": false, "straight": false, "out_mode": "out" }
         }
     });
 </script>
