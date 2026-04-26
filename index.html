@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN - Gerenciador de Comprovantes</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
+        .card { background: #1e1e1e; border: 1px solid #333; padding: 20px; margin-bottom: 20px; border-radius: 10px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+        .info { flex: 1; min-width: 200px; }
+        img { max-width: 300px; border-radius: 5px; cursor: pointer; border: 2px solid #444; }
+        img:hover { border-color: #007bff; }
+        button { background: #28a745; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #218838; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Painel Administrativo - Novas Solicitações</h2>
+        <button onclick="firebase.auth().signOut()" style="background:#c82333">Sair</button>
+    </div>
+    <div id="lista-solicitacoes">Carregando solicitações...</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyACGn5I--vTEmJ6eijN2lytZiMgo2ElnW4",
+        authDomain: "vortexdev2.firebaseapp.com",
+        databaseURL: "https://vortexdev2-default-rtdb.firebaseio.com",
+        projectId: "vortexdev2",
+        storageBucket: "vortexdev2.firebasestorage.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Verificação de Identidade Admin
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            if (user.email === 'ffvortex20@gmail.com') {
+                carregarSolicitacoes();
+            } else {
+                document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:100px;'>ACESSO NEGADO: Você não é o administrador.</h1>";
+            }
+        } else {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider);
+        }
+    });
+
+    function carregarSolicitacoes() {
+        db.ref('solicitacoes').on('value', snapshot => {
+            const container = document.getElementById('lista-solicitacoes');
+            container.innerHTML = "";
+            
+            if (!snapshot.exists()) {
+                container.innerHTML = "<h3>Nenhum comprovante pendente no momento.</h3>";
+                return;
+            }
+
+            snapshot.forEach(userNode => {
+                userNode.forEach(item => {
+                    const data = item.val();
+                    const msgKey = item.key;
+                    const userUid = userNode.key;
+
+                    const html = `
+                        <div class="card">
+                            <div class="info">
+                                <p><b>Cliente:</b> ${data.nome}</p>
+                                <p><b>E-mail:</b> ${data.email}</p>
+                                <p><b>Solicitou:</b> <span style="color:#00ff00; font-size:20px">${data.dias} Dias</span></p>
+                                <p><small>Enviado em: ${new Date(data.timestamp).toLocaleString()}</small></p>
+                            </div>
+                            <div class="foto">
+                                <a href="${data.fotoUrl}" target="_blank">
+                                    <img src="${data.fotoUrl}" title="Clique para ampliar">
+                                </a>
+                            </div>
+                            <button onclick="gerarSenha('${userUid}', '${data.dias}', '${msgKey}')">GERAR E ENVIAR SENHA</button>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            });
+        });
+    }
+
+    function gerarSenha(uid, dias, msgKey) {
+        // Gera uma senha aleatória de 8 dígitos (como na sua foto)
+        const senhaAleatoria = Math.floor(10000000 + Math.random() * 90000000);
+        
+        // 1. Envia a senha para o nó de respostas do cliente
+        db.ref('respostas/' + uid).push({
+            senha: senhaAleatoria,
+            dias: dias,
+            timestamp: Date.now()
+        }).then(() => {
+            // 2. Remove a solicitação da sua lista de pendentes (limpa o painel)
+            db.ref(`solicitacoes/${uid}/${msgKey}`).remove();
+            alert("Senha enviada para o cliente!");
+        });
+    }
+</script>
+</body>
+</html>
