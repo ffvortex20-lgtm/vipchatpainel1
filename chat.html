@@ -18,6 +18,7 @@
         .btn-neon { width: 100%; padding: 15px; border: none; border-radius: 10px; background: linear-gradient(90deg, #1a73e8, #00d2ff); color: white; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 15px rgba(26, 115, 232, 0.6); transition: 0.3s; font-family: 'Orbitron'; }
         .btn-neon:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(26, 115, 232, 0.8); }
         .logout-btn { background: transparent; color: #ff4b2b; border: 1px solid #ff4b2b; margin-top: 15px; padding: 8px; font-size: 0.7em; }
+        .btn-neon:disabled { background: #333; cursor: not-allowed; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
         <img id="user-img" class="user-avatar" src="">
         <h4 id="user-name" style="margin: 0 0 15px 0; color: #00d2ff;"></h4>
         
-        <div id="chat-box"></div>
+        <div id="chat-box">Carregando informações...</div>
 
         <select id="dias">
             <option value="5">💎 5 DIAS</option>
@@ -70,15 +71,11 @@
     const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
 
-    // Funções de Interface
     const loginArea = document.getElementById('login-area');
     const chatArea = document.getElementById('chat-area');
 
     document.getElementById('googleLogin').onclick = () => {
-        signInWithPopup(auth, provider).catch(err => {
-            console.error(err);
-            alert("Erro no login: " + err.message);
-        });
+        signInWithPopup(auth, provider).catch(err => alert("Erro no login: " + err.message));
     };
 
     document.getElementById('logout').onclick = () => signOut(auth);
@@ -90,15 +87,17 @@
             document.getElementById('user-name').innerText = user.displayName;
             document.getElementById('user-img').src = user.photoURL;
             
-            // Carregar Respostas do Admin
             onValue(ref(db, 'respostas/' + user.uid), (snapshot) => {
                 const box = document.getElementById('chat-box');
                 box.innerHTML = "";
-                if(!snapshot.exists()) box.innerHTML = "Envie o comprovante para receber sua KEY.";
-                snapshot.forEach(child => {
-                    const msg = child.val();
-                    box.innerHTML += `<div style="color:#00ff00; margin-bottom:5px;">> KEY GERADA (${msg.dias}D):<br><b style="font-size:1.2em;">VTX-VIP-${msg.senha}</b></div>`;
-                });
+                if(!snapshot.exists()) {
+                    box.innerHTML = "Envie o comprovante para receber sua KEY.";
+                } else {
+                    snapshot.forEach(child => {
+                        const msg = child.val();
+                        box.innerHTML += `<div style="color:#00ff00; margin-bottom:5px;">> KEY GERADA (${msg.dias}D):<br><b style="font-size:1.1em;">VTX-VIP-${msg.senha}</b></div>`;
+                    });
+                }
             });
         } else {
             loginArea.style.display = 'block';
@@ -106,17 +105,21 @@
         }
     });
 
+    // --- FUNÇÃO DE ENVIO CORRIGIDA ---
     document.getElementById('btn-enviar').onclick = async () => {
-        const file = document.getElementById('foto').files[0];
+        const fileInput = document.getElementById('foto');
+        const file = fileInput.files[0];
         const dias = document.getElementById('dias').value;
-        if (!file) return alert("Selecione a foto!");
-
         const btn = document.getElementById('btn-enviar');
-        btn.innerText = "UPLOADING...";
+
+        if (!file) return alert("Selecione a foto do comprovante!");
+
+        // Inicia carregamento
+        btn.innerText = "⏳ ENVIANDO...";
         btn.disabled = true;
 
         try {
-            const fileRef = sRef(storage, `comprovantes/${auth.currentUser.uid}/${Date.now()}`);
+            const fileRef = sRef(storage, `comprovantes/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
             await uploadBytes(fileRef, file);
             const url = await getDownloadURL(fileRef);
 
@@ -128,16 +131,17 @@
                 timestamp: Date.now()
             });
 
-            alert("Comprovante enviado!");
-            btn.innerText = "⚡ ENVIAR COMPROVANTE";
-            btn.disabled = false;
+            alert("✅ Enviado! Aguarde a KEY no painel.");
+            fileInput.value = ""; // Limpa o arquivo selecionado
         } catch (e) {
             alert("Erro: " + e.message);
+        } finally {
+            // Volta o botão ao normal indepentente de sucesso ou erro
+            btn.innerText = "⚡ ENVIAR COMPROVANTE";
             btn.disabled = false;
         }
     };
 
-    // Partículas (Efeito Neve/Linhas)
     particlesJS("particles-js", {
         "particles": {
             "number": { "value": 70 },
